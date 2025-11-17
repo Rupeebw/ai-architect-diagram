@@ -1,0 +1,122 @@
+# E-Commerce Website - What We Need
+
+## About Our Project
+We're building an online shopping website that needs to handle lots of customers, keep their data safe, and work 24/7 without going down.
+
+## What the website needs to do:
+
+### Handle web traffic
+- We expect lots of visitors shopping at the same time
+- Need a load balancer to distribute traffic
+- Website should work even if one server fails
+- Want it in 2 different data centers for backup
+
+### Store customer and product data
+- Customer accounts and profiles
+- Product catalog with prices
+- Shopping cart and order history
+- Need a database that's always available
+- Database needs backup in case something goes wrong
+
+### Store images and files
+- Product photos (lots of them!)
+- Customer profile pictures
+- User uploaded reviews and photos
+- Order receipts and invoices
+- Need cheap storage that scales
+
+### Keep everything secure
+- Customer passwords need to be encrypted
+- Payment information must be secure
+- All data should be encrypted
+- Need to detect if someone tries to hack us
+- SSL certificates for HTTPS
+
+### Monitor everything
+- Know if website is slow or down
+- Get alerts if something breaks
+- Track errors and performance
+- See logs when investigating problems
+- Get notifications on our phones if critical issues
+
+### Performance needs
+- Website should load fast
+- Product images should load quickly worldwide
+- Cache frequently accessed data
+- Handle Black Friday traffic spikes
+
+### Data backup
+- Daily database backups
+- Keep backups for at least a week
+- Store old data in cheaper archive storage
+
+## Technical requirements (from our IT team):
+
+### Network setup
+- Private network for our servers (VPC)
+- Separate sections for web servers and databases
+- 2 availability zones for redundancy
+- Internet access for web servers
+- Databases should NOT be accessible from internet
+
+### Servers
+- Web application servers (can scale from 2 to 8 based on traffic)
+- Application load balancer
+- Auto-scaling when busy
+
+### Database
+- PostgreSQL database
+- Multi-AZ (runs in 2 locations)
+- 500 GB storage
+- Weekly backups
+
+### Storage buckets needed
+1. Product images bucket - for all product photos
+2. User uploads bucket - for customer uploaded content
+3. Backups bucket - for database backups and logs
+
+### Security requirements
+- Encrypt everything (database, files, backups)
+- Store passwords securely (not in code)
+- Monitor for suspicious activity
+- Web application firewall to block attacks
+- SSL/TLS certificates
+
+### Monitoring requirements
+- CloudWatch for monitoring server health
+- Alerts for high CPU, memory, errors
+- Distributed tracing to find slow parts
+- Audit logs for compliance
+
+### Other needs
+- Content delivery network for fast image loading
+- Shared storage for application files
+- Cache layer for faster database queries
+- Email notifications for system alerts
+
+## Compliance
+- Need to meet security standards
+- Encrypt all customer data
+- Keep audit logs
+- Detect and prevent data breaches
+
+---
+
+# What this should generate:
+
+The system should automatically figure out we need:
+- VPC with public and private networks
+- Load balancer and web servers
+- PostgreSQL database (protected)
+- S3 storage buckets (3 of them)
+- CloudWatch monitoring
+- KMS encryption
+- Secrets Manager for passwords
+- GuardDuty for security
+- X-Ray for performance tracking
+- CloudFront for fast image delivery
+- Shared file storage (EFS)
+- Security certificates
+- WAF protection
+
+Everything should be encrypted, monitored, and highly available!

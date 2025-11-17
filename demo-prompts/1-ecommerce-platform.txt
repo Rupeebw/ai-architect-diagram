@@ -1,0 +1,233 @@
+# E-Commerce Platform - Full-Stack Architecture
+
+## Project Overview
+Production-ready e-commerce platform with high availability, security, and comprehensive monitoring.
+
+## Network Architecture
+
+### VPC Configuration
+- VPC CIDR: 10.0.0.0/16
+- Region: eu-central-1
+- Availability Zones: 2 (eu-central-1a, eu-central-1b)
+
+### Subnets
+- 2 Public Subnets (10.0.1.0/24, 10.0.2.0/24)
+  - Purpose: Application Load Balancer, NAT Gateways
+
+- 2 Private App Subnets (10.0.16.0/22, 10.0.20.0/22)
+  - Purpose: EC2 application servers
+
+- 2 Private DB Subnets (10.0.32.0/24, 10.0.33.0/24)
+  - Purpose: RDS database instances
+
+### Network Components
+- Internet Gateway (for public internet access)
+- 2 NAT Gateways (one per AZ for high availability)
+- Route Tables (1 public, 2 private)
+
+## Compute Layer
+
+### Application Servers
+- EC2 Auto Scaling Group
+  - Instance Type: t3.medium
+  - Min Capacity: 2
+  - Max Capacity: 8
+  - Desired Capacity: 4
+  - Health Check: ELB
+
+- Application Load Balancer (ALB)
+  - Internet-facing
+  - SSL/TLS termination with ACM certificate
+  - Health checks on /health endpoint
+  - Cross-zone load balancing enabled
+
+## Database Layer
+
+### Primary Database
+- RDS PostgreSQL 14
+  - Instance Class: db.r5.xlarge
+  - Multi-AZ deployment (high availability)
+  - Storage: 500 GB SSD (gp3)
+  - Backup retention: 7 days
+  - Automated backups enabled
+  - Encryption at rest: KMS
+  - Credentials: Secrets Manager
+
+### Caching Layer
+- ElastiCache Redis
+  - Node Type: cache.r5.large
+  - Number of nodes: 2 (for replication)
+  - Purpose: Session storage, product catalog caching
+
+## Storage Services
+
+### S3 Buckets (3 buckets required)
+
+1. **Product Images Bucket**
+   - Purpose: Product photos, thumbnails
+   - Lifecycle: Intelligent-Tiering
+   - Versioning: Enabled
+   - CloudFront distribution for fast delivery
+
+2. **User Uploads Bucket**
+   - Purpose: Customer profile pictures, reviews
+   - Lifecycle: Standard → IA after 90 days
+   - Encryption: SSE-KMS
+
+3. **Backups Bucket**
+   - Purpose: Database backups, application logs
+   - Lifecycle: Standard → Glacier after 90 days
+   - Retention: 365 days
+
+### Shared File System
+- EFS (Elastic File System)
+  - Purpose: Shared application assets, uploaded files
+  - Performance Mode: General Purpose
+  - Throughput Mode: Bursting
+  - Mounted on all EC2 instances
+
+## Monitoring & Observability
+
+### CloudWatch
+- Application logs from EC2 instances
+- Database performance metrics
+- ALB request logs and metrics
+- Custom application metrics
+
+### CloudWatch Alarms (Critical)
+- EC2 CPU > 80% for 5 minutes
+- Memory utilization > 85%
+- ALB 5xx errors > 100 per minute
+- RDS CPU > 75%
+- RDS connections > 80% of max
+
+### Distributed Tracing
+- X-Ray enabled for request tracing
+  - Track user sessions across services
+  - Identify performance bottlenecks
+  - Debug errors in production
+
+### Audit Logging
+- CloudTrail enabled for all API calls
+  - Log retention: 365 days
+  - S3 bucket: audit-logs-bucket
+  - Compliance requirement
+
+### Notifications
+- SNS topic for critical alarms
+  - Subscribers: DevOps team email, PagerDuty
+  - Notifications for: High CPU, 5xx errors, database issues
+
+## Security Services
+
+### Encryption
+- KMS (Key Management Service)
+  - Customer Managed Keys (CMK)
+  - Encrypts: RDS, S3, EBS volumes, EFS
+  - Key rotation: Enabled (annual)
+
+### Secrets Management
+- AWS Secrets Manager
+  - Stores: RDS database passwords
+  - Stores: Third-party API keys (payment gateway, email service)
+  - Automatic rotation: 90 days
+
+### Threat Detection
+- GuardDuty enabled
+  - Monitors: VPC Flow Logs, CloudTrail events, DNS logs
+  - Alerts on: Suspicious activity, unauthorized access attempts
+
+### Web Application Firewall
+- WAF attached to ALB
+  - Rules: SQL injection protection
+  - Rules: XSS protection
+  - Rules: Rate limiting (1000 requests/5min per IP)
+  - Rules: Geo-blocking (block specific countries if needed)
+
+### SSL/TLS Certificates
+- AWS Certificate Manager (ACM)
+  - Domain: shop.example.com
+  - Wildcard: *.shop.example.com
+  - Auto-renewal enabled
+
+## DNS & CDN
+
+### DNS Configuration
+- Route 53 hosted zone
+  - Domain: shop.example.com
+  - Record: A (Alias to ALB)
+  - Health checks enabled
+
+### Content Delivery
+- CloudFront distribution
+  - Origin: S3 product images bucket
+  - Origin: ALB (for dynamic content)
+  - Edge locations: Global
+  - SSL certificate: ACM
+  - Caching: Optimized for e-commerce
+
+## User Access Flow
+
+1. User → Route 53 (shop.example.com)
+2. Route 53 → CloudFront (static assets) OR ALB (dynamic requests)
+3. CloudFront → S3 (product images)
+4. ALB → EC2 instances (application logic)
+5. EC2 → RDS (database queries)
+6. EC2 → ElastiCache (session/cache lookup)
+7. EC2 → S3 (user uploads, backups)
+8. EC2 → EFS (shared files)
+
+All monitored by CloudWatch, encrypted by KMS, credentials from Secrets Manager.
+
+## Compliance & Security
+
+- Data encryption at rest: KMS for all data stores
+- Data encryption in transit: TLS 1.2+ only
+- Database credentials: Stored in Secrets Manager, rotated every 90 days
+- Audit logging: CloudTrail enabled, 365-day retention
+- Threat detection: GuardDuty active
+- Network isolation: 3-tier subnet architecture (Public → App → DB)
+- No direct internet access to databases
+
+## Scalability
+
+- Auto Scaling based on CPU and memory metrics
+- RDS Read Replicas for read-heavy workloads (can be added)
+- ElastiCache for session management
+- CloudFront for global content delivery
+- Multi-AZ deployment for high availability
+
+## Backup & Disaster Recovery
+
+- RDS automated backups: Daily, 7-day retention
+- RDS snapshots: Weekly manual snapshots
+- S3 versioning enabled for critical buckets
+- Cross-region replication for backups bucket (optional)
+- EFS automated backups
+
+## Cost Optimization
+
+- S3 Intelligent-Tiering for product images
+- S3 Lifecycle policies (Standard → IA → Glacier)
+- Auto Scaling to match demand
+- Reserved Instances for baseline capacity
+- Spot Instances for burst capacity (non-critical workloads)
+
+---
+
+## Testing Instructions
+
+Use this command to generate the diagram:
+
+```bash
+/draw-aws-diagram /Users/rupeshpanwar/Documents/PProject/schild/architecture/demo/1-ecommerce-platform.txt
+```
+
+Expected layers:
+- ✅ Core Infrastructure (VPC, EC2, RDS, ALB)
+- ✅ Storage (3 S3 buckets, EFS)
+- ✅ Observability (CloudWatch, X-Ray, CloudTrail, SNS)
+- ✅ Security (KMS, Secrets Manager, GuardDuty)
+
+Expected components: ~35-40 services
+Diagram size: ~2000x1600px (multi-layer)

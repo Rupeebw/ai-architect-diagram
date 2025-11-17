@@ -1,0 +1,211 @@
+# Plain English Architecture Requests
+# Examples that non-technical people can write
+
+---
+
+## Example 1: Simple Business Website
+
+I need a website for my small business.
+
+Requirements:
+- Customers can visit from anywhere
+- Contact form that saves to database
+- Photo gallery of our work
+- Need it to be secure and backed up
+- Should work even if server fails
+- Want to know if website goes down
+
+---
+
+## Example 2: Mobile App Backend
+
+We're building a mobile app and need the backend infrastructure.
+
+What we need:
+- API for mobile app to connect to
+- Database to store user accounts and app data
+- Storage for user uploaded photos
+- Push notifications
+- User login and authentication
+- Fast and scalable (expecting 10,000 users)
+- Secure - encrypt user data
+- Monitoring so we know if something breaks
+
+---
+
+## Example 3: Blog Platform
+
+Building a blogging platform like Medium.
+
+Features needed:
+- User can write and publish articles
+- Upload images for blog posts
+- Comments and likes on articles
+- User profiles
+- Store everything in database
+- Fast loading for readers worldwide
+- Backup all content
+- Secure user passwords
+- Scale when we go viral
+
+---
+
+## Example 4: File Sharing Service
+
+Need a secure file sharing platform for our company.
+
+Requirements:
+- Employees upload files
+- Share files with other employees
+- Different folders for different teams
+- Virus scanning on uploads
+- Encryption (our files are confidential)
+- Audit logs - who accessed what file when
+- Storage that grows as we need it
+- Automatic backups
+- Fast downloads
+
+---
+
+## Example 5: E-Learning Platform
+
+Online course platform with video content.
+
+What students need:
+- Watch video lessons
+- Take quizzes
+- Track progress
+- Download course materials
+- Discussion forums
+
+What we need on backend:
+- Store videos (lots of them!)
+- Student accounts database
+- Quiz results and progress tracking
+- Fast video streaming worldwide
+- Handle many students watching at once
+- Secure payment processing
+- Student data privacy
+- Performance monitoring
+
+---
+
+## Example 6: Real Estate Listings
+
+Property listing website.
+
+Features:
+- Property photos and details
+- Search by location, price, features
+- Save favorite properties
+- Contact agents
+- User accounts for agents and buyers
+
+Technical needs:
+- Database for properties and users
+- Storage for property photos
+- Map integration
+- Search functionality
+- Email notifications
+- Secure and reliable
+- Fast image loading
+- Analytics to track popular listings
+
+---
+
+## Example 7: Restaurant Delivery App
+
+Food delivery platform backend.
+
+What we need:
+- Restaurant menus in database
+- Customer orders tracking
+- Real-time order status updates
+- Payment processing
+- Driver location tracking
+- Photos of food items
+- Customer reviews
+- Handle dinner rush hour traffic
+- Monitor for issues
+- Secure customer payment info
+
+---
+
+## Example 8: Healthcare Patient Portal
+
+Patient portal for medical practice.
+
+Requirements:
+- Patient appointments database
+- Medical records storage
+- Secure messaging with doctors
+- Prescription refill requests
+- Lab results access
+- HIPAA compliant (healthcare data rules)
+- Encryption mandatory
+- Audit all access to records
+- Secure and private
+- High availability - patients need 24/7 access
+- Detect security breaches
+
+---
+
+## Example 9: Inventory Management System
+
+Warehouse inventory tracking.
+
+What we need:
+- Track products in warehouse
+- Scan barcodes to update inventory
+- Reports on stock levels
+- Alerts when stock is low
+- Integration with suppliers
+- Multiple warehouse locations
+- Real-time updates
+- Backup all data daily
+- Reliable - warehouse depends on it
+
+---
+
+## Example 10: Social Media Platform
+
+Small social network for hobbyists.
+
+Features:
+- User profiles
+- Post photos and updates
+- Follow other users
+- Like and comment
+- News feed
+- Direct messages
+
+Backend needs:
+- User accounts database
+- Photo storage (users upload lots)
+- Fast news feed generation
+- Handle traffic spikes when something trends
+- Notifications
+- Secure user data
+- Monitoring and alerts
+- Scale as we grow
+
+---
+
+# How to use these examples:
+
+Just copy one of these examples, customize it for your needs, save as a .txt file, and run:
+
+```bash
+/draw-aws-diagram /path/to/your-requirements.txt
+```
+
+The AI will automatically figure out you need:
+- VPC and networking
+- Load balancers and servers
+- Databases
+- Storage (S3)
+- Monitoring (CloudWatch)
+- Security (KMS, Secrets Manager)
+- And more!
+
+No need to know AWS services - just describe what your application needs to do!

@@ -1,0 +1,31 @@
+# AWS Infrastructure Plan - VPC with Public/Private Subnets
+
+
+  The plan includes a production-ready AWS VPC architecture with:
+
+  Network Components:
+  - 1 VPC (10.0.0.0/16)
+  - 2 Public Subnets (for ALB and NAT Gateways)
+  - 2 Private Subnets (for EC2 and RDS)
+  - 1 Internet Gateway
+  - 2 NAT Gateways (one per AZ for high availability)
+  - 3 Route Tables (1 public, 2 private)
+
+  Compute & Database:
+  - EC2 instances in private subnets (Auto Scaling Group)
+  - RDS database in private subnets (Multi-AZ)
+
+  User Access via:
+  - Route 53: DNS resolution (app.example.com)
+  - ACM: SSL/TLS certificates
+  - ALB: Load balancing across EC2 instances in private subnets
+
+  Traffic Flow:
+  User → Route 53 → ALB (with ACM cert) → EC2 (private) → RDS
+  (private)
+
+  The plan also includes security groups, deployment order,
+  monitoring recommendations, and cost optimization tips. Note
+  that I've placed EC2 instances in private subnets (not public)
+  as this is the security best practice, with the ALB in public
+  subnets handling internet-facing traffic.

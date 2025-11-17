@@ -1,0 +1,229 @@
+# AWS Diagram Generation - Tech Stack
+
+## Overview
+AI-powered AWS architecture diagram generator using Claude Code with multi-agent orchestration.
+
+## Core Technology Stack
+
+### 1. Claude Code (AI Agent Framework)
+- **What**: Anthropic's CLI tool for AI-assisted development
+- **Role**: Orchestrates diagram generation via specialized agents
+- **Installation**: Already installed (you're using it now)
+- **Version**: Claude Sonnet 4.5
+
+### 2. Draw.io (Diagram Editor)
+- **What**: Open-source diagramming tool
+- **Role**: Edit and view generated .drawio files
+- **File Format**: XML-based (.drawio extension)
+- **Installation Options**:
+  ```bash
+  # Option 1: Web-based (No installation required)
+  https://app.diagrams.net/
+
+  # Option 2: Desktop App (Recommended for offline work)
+  brew install --cask drawio
+  ```
+
+### 3. AWS Diagram-as-Code (awsdac) - AWS Native Tool
+- **What**: CLI tool for drawing AWS architecture diagrams via YAML
+- **Version**: 0.22.3
+- **Installation Date**: Nov 14, 2025 (20:16:34)
+- **GitHub**: https://github.com/awslabs/diagram-as-code
+- **License**: Apache-2.0
+- **Status**: ✅ Installed
+- **Command**: `awsdac <input.yaml> -o output.png`
+- **Output**: PNG images
+- **Dependencies**: Graphviz (automatically installed)
+
+### 4. Graphviz (Graph Visualization)
+- **What**: Graph visualization software from AT&T and Bell Labs
+- **Version**: 14.0.2
+- **Installation Date**: Nov 14, 2025 (17:17:00)
+- **Website**: https://graphviz.org/
+- **License**: EPL-1.0
+- **Status**: ✅ Installed
+- **Role**: Required by awsdac for rendering diagrams
+
+### 5. Multi-Agent System (Custom - Claude Code)
+- **What**: Specialized AI agents for different AWS service layers
+- **Location**: `/Users/rupeshpanwar/Documents/PProject/schild/.claude/agents/`
+- **Available Agents**:
+  - aws-diagram-orchestrator (coordinator)
+  - aws-core-architecture-agent (VPC, EC2, RDS)
+  - aws-storage-layer-agent (S3, EFS)
+  - aws-observability-layer-agent (CloudWatch, X-Ray)
+  - aws-security-services-agent (KMS, Secrets Manager)
+
+## Output Formats (Two Options)
+
+### Option 1: Claude Code Multi-Agent System (Current Primary)
+- **Format**: draw.io XML (.drawio files)
+- **Output Directory**: `/Users/rupeshpanwar/Documents/PProject/schild/architecture/diagrams/`
+- **Naming**: `aws-{architecture-name}-{timestamp}.drawio`
+- **Editable**: Fully editable in draw.io (web or desktop)
+- **Exportable**: PNG, PDF, SVG, etc.
+- **Command**: `/draw-aws-diagram <plan-file>`
+
+### Option 2: AWS Diagram-as-Code (awsdac)
+- **Format**: PNG images
+- **Input**: YAML configuration files
+- **Output**: PNG diagrams
+- **Command**: `awsdac input.yaml -o output.png`
+- **CloudFormation**: Can generate from CFN templates (`-c` flag)
+- **Template Support**: Supports Go text/template syntax (`-t` flag)
+
+## Required Software (Summary)
+
+### Essential (Already Installed ✅)
+1. **Claude Code** - AI agent framework
+2. **awsdac** - AWS Diagram-as-Code (v0.22.3)
+3. **Graphviz** - Graph visualization (v14.0.2)
+4. **Web Browser** - For app.diagrams.net
+
+### Optional (Enhanced Workflow)
+1. **Draw.io Desktop** - Offline editing
+   ```bash
+   brew install --cask drawio
+   ```
+
+2. **VS Code** (if not already installed) - Code editing
+   ```bash
+   brew install --cask visual-studio-code
+   ```
+
+## Workflow Options
+
+### Workflow 1: Claude Code Multi-Agent (AI-Powered)
+
+1. **Generate Diagram**:
+   ```bash
+   /draw-aws-diagram <architecture-plan-file>
+   ```
+
+2. **Claude Code** (AI agents):
+   - Reads architecture plan
+   - Detects required AWS services
+   - Orchestrates specialized agents
+   - Generates draw.io XML file
+
+3. **View/Edit**:
+   - Open https://app.diagrams.net/
+   - Load generated .drawio file
+   - Customize, export (PNG/PDF)
+
+### Workflow 2: AWS Diagram-as-Code (YAML-Based)
+
+1. **Create YAML config**:
+   ```yaml
+   Diagram:
+     DefinitionFiles:
+       - Type: URL
+         Url: https://raw.githubusercontent.com/awslabs/diagram-as-code/...
+     Resources:
+       - Type: VPC
+         Properties:
+           Name: MyVPC
+   ```
+
+2. **Generate PNG**:
+   ```bash
+   awsdac architecture.yaml -o diagram.png
+   ```
+
+3. **Or from CloudFormation**:
+   ```bash
+   awsdac template.yaml -c -o diagram.png
+   ```
+
+## Dependencies (Auto-Handled)
+
+- **AWS Service Icons**: Embedded in draw.io (mxgraph.aws4.* library)
+- **XML Generation**: Handled by Claude Code agents
+- **Positioning Logic**: Built into agent prompts
+- **Quality Validation**: Agent-based validation
+
+## Architecture Benefits
+
+- **No Manual Drawing**: AI generates complete diagrams
+- **Version Control**: Text-based XML (git-friendly)
+- **Scalable**: Multi-agent system handles complex architectures
+- **Professional**: AWS Well-Architected Framework compliant
+- **Extensible**: Add new agents for additional AWS services
+
+## Installation Commands (Quick Reference)
+
+```bash
+# AWS Diagram-as-Code (ALREADY INSTALLED ✅)
+brew install awsdac
+
+# Graphviz (ALREADY INSTALLED ✅ - auto-installed with awsdac)
+brew install graphviz
+
+# Draw.io Desktop (optional)
+brew install --cask drawio
+
+# Verify installation
+awsdac --version          # Should show 0.22.3
+dot -V                    # Graphviz version
+which awsdac              # Command location
+ls -la ~/.claude/         # Claude Code config
+```
+
+## Installation History (Last 3 Days)
+
+**Nov 14, 2025:**
+- 17:17:00 - Graphviz 14.0.2 installed (43 packages + dependencies)
+- 20:16:34 - awsdac 0.22.3 installed
+
+**Dependencies Auto-Installed:**
+- libtiff, pixman, freetype, fontconfig, pango, cairo
+- glib, gobject-introspection, graphviz
+- webp, jpeg-turbo, libpng, and 30+ other libraries
+
+## Current System Status
+
+✅ Claude Code - Installed & Active (Sonnet 4.5)
+✅ awsdac - v0.22.3 (Nov 14, 2025)
+✅ Graphviz - v14.0.2 (Nov 14, 2025)
+✅ Multi-Agent System - 5 agents ready
+✅ Output Directory - `/architecture/diagrams/` (exists)
+✅ Web Access - app.diagrams.net (no install needed)
+⏳ Draw.io Desktop - Optional (install if needed)
+
+---
+
+## Comparison: Claude Code vs awsdac
+
+| Feature | Claude Code Multi-Agent | awsdac |
+|---------|------------------------|--------|
+| **Input** | Natural language + plan files | YAML configuration |
+| **Output** | .drawio XML (editable) | PNG images (static) |
+| **AI-Powered** | Yes - auto-detects services | No - manual YAML config |
+| **Learning Curve** | Low - describe architecture | Medium - YAML syntax |
+| **Flexibility** | High - AI adapts to description | Medium - YAML structure |
+| **Editing** | Full in draw.io | Limited - regenerate PNG |
+| **CloudFormation** | No native support | Yes - `-c` flag |
+| **Best For** | Complex, evolving architectures | Simple, static diagrams |
+
+## Recommendation
+
+**Primary Tool**: Claude Code Multi-Agent System
+- AI-powered, natural language input
+- Fully editable output
+- Handles complex multi-layer architectures
+- Current workflow optimization
+
+**Secondary Tool**: awsdac
+- Quick PNG generation from YAML
+- CloudFormation template visualization
+- Simple architectures
+- CI/CD pipeline integration
+
+---
+
+**You're ready to generate AWS architecture diagrams with TWO powerful tools!**
+
+**Tool 1 (Primary)**: Claude Code - AI-powered, flexible, editable
+**Tool 2 (Secondary)**: awsdac - YAML-based, CloudFormation support
+
+All software installed and ready to use ✅

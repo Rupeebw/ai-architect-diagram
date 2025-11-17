@@ -1,0 +1,43 @@
+# AWS Infrastructure Plan - Automated Security Remediation System
+
+
+  The plan includes a multi-account security automation architecture with:
+
+  Administrator Account Components:
+  - AWS Config: Monitor compliance across accounts
+  - AWS Security Hub: Aggregate security findings
+  - AWS Findings: Security issue detection
+  - EventBridge Hub: Custom actions for manual remediation
+  - EventBridge Bus: Route security events automatically
+  - Orchestrator Lambda: Coordinate remediation workflow
+  - Security Lambda: Execute security-specific fixes
+  - Step Functions: Manage complex remediation workflows
+  - DynamoDB Table: Store remediation history
+  - SNS Topic: Send notifications
+
+  Member Account Components:
+  - Orchestrator IAM Roles: Allow admin account to remediate issues
+  - Control Runbook (SSM Document): Standardized remediation steps
+  - Remediation Runbook (SSM Document): Specific fix procedures
+  - KMS Key: Encrypt remediation data
+  - Lambda Functions: Execute custom remediation logic
+  - S3 Bucket: Store remediation logs
+  - Other Resources: EC2, RDS, security groups being fixed
+
+  How It Works:
+  Step 1: Security services detect issues (Config, Security Hub)
+  Step 2: EventBridge triggers remediation (manual or automatic)
+  Step 3: Orchestrator Lambda coordinates the fix
+  Step 4: Lambda assumes role in member account and executes remediation
+  Step 5: Results stored in DynamoDB, notifications sent via SNS
+
+  Traffic Flow:
+  Security Finding → EventBridge → Orchestrator Lambda → Member Account
+  IAM Role → SSM Runbook/Lambda → Fix Applied → Notification Sent
+
+  The plan includes cross-account IAM roles, EventBridge rules for
+  automated remediation, and manual triggers via Security Hub custom
+  actions. All remediation actions are logged in DynamoDB and CloudTrail
+  for audit purposes. The architecture supports automatic fixes (like
+  blocking public S3 buckets) and manual approval workflows for sensitive
+  changes.

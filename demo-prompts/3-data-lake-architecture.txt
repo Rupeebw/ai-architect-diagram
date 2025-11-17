@@ -1,0 +1,128 @@
+# Data Lake Architecture - Analytics Platform
+
+## Project Overview
+Data lake for ingesting, processing, and analyzing large datasets with multiple storage tiers.
+
+## Core Infrastructure
+
+### Network
+- VPC: 10.0.0.0/16
+- 2 Availability Zones
+- 2 Public subnets
+- 2 Private subnets for data processing
+
+### Compute
+- EC2 instances for data processing jobs
+- Application Load Balancer for API endpoints
+
+## Storage Architecture (Multiple S3 Buckets)
+
+### Raw Data Lake
+- **S3 Bucket: raw-data-landing**
+  - Purpose: Landing zone for all incoming data
+  - Format: JSON, CSV, Parquet
+  - Lifecycle: Keep in Standard for 30 days
+  - Versioning: Enabled
+
+### Processed Data
+- **S3 Bucket: processed-data**
+  - Purpose: Cleaned and transformed data
+  - Format: Parquet (optimized for queries)
+  - Lifecycle: Standard → IA after 90 days
+  - Partitioned by date
+
+### Analytics Results
+- **S3 Bucket: analytics-results**
+  - Purpose: Query results, reports, dashboards
+  - Format: CSV, JSON
+  - Lifecycle: Standard for 60 days, then IA
+
+### Archived Data
+- **S3 Bucket: archived-data**
+  - Purpose: Long-term retention
+  - Storage Class: S3 Glacier Deep Archive
+  - Retention: 7 years (compliance)
+
+### Application Logs
+- **S3 Bucket: data-pipeline-logs**
+  - Purpose: ETL logs, error logs
+  - Lifecycle: Delete after 90 days
+
+## Monitoring & Observability
+
+### CloudWatch
+- ETL job logs
+- Data processing metrics
+- S3 bucket metrics (objects, size)
+- Custom metrics for data quality
+
+### X-Ray
+- Trace data pipeline execution
+- Identify bottlenecks in processing
+
+### CloudTrail
+- Audit all S3 access
+- Track data modifications
+- Compliance logging
+
+### Alarms
+- SNS notifications for failed ETL jobs
+- Data quality issues
+- Storage quota alerts
+
+## Security
+
+### Encryption
+- KMS encryption for all S3 buckets
+- Customer managed keys
+- Separate keys for raw vs processed data
+
+### Access Control
+- Secrets Manager for API credentials
+- IAM roles for EC2 instances
+- S3 bucket policies (least privilege)
+
+### Data Security
+- Macie enabled for S3 buckets
+  - Scan for PII (Personally Identifiable Information)
+  - Detect sensitive data
+  - Compliance reporting
+
+### Threat Detection
+- GuardDuty for unusual S3 access patterns
+- Alerts on data exfiltration attempts
+
+## Data Flow
+
+1. Data sources → S3 raw-data-landing bucket
+2. EC2 processing jobs → Read from raw-data
+3. Transformation → Write to processed-data bucket
+4. Analytics queries → Read from processed-data
+5. Results → Write to analytics-results bucket
+6. Lifecycle policies → Move old data to archived-data (Glacier)
+7. All activity monitored by CloudWatch and CloudTrail
+
+## File System
+
+### EFS for Shared Storage
+- Shared storage for processing scripts
+- Configuration files
+- Temporary processing data
+- Mounted on all EC2 instances
+
+---
+
+## Testing Instructions
+
+```bash
+/draw-aws-diagram /Users/rupeshpanwar/Documents/PProject/schild/architecture/demo/3-data-lake-architecture.txt
+```
+
+Expected layers:
+- ✅ Core Infrastructure (VPC, EC2)
+- ✅ Storage (5 S3 buckets + EFS) - This will test multiple S3 buckets
+- ✅ Observability (CloudWatch, X-Ray, CloudTrail, SNS)
+- ✅ Security (KMS, Secrets Manager, Macie, GuardDuty)
+
+Expected components: ~30+ services (lots of S3 buckets)
+Note: Tests the storage agent's ability to handle multiple S3 buckets

@@ -1,0 +1,36 @@
+# Minimal Test - Bare Bones Architecture
+
+## Purpose
+Test the absolute minimum configuration and auto-include behavior.
+
+## Infrastructure
+
+### Network
+- VPC with 2 Availability Zones
+- Public and private subnets
+
+### Compute
+- ALB
+- EC2 instances
+
+### Database
+- RDS MySQL
+
+---
+
+## Testing Instructions
+
+```bash
+/draw-aws-diagram /Users/rupeshpanwar/Documents/PProject/schild/architecture/demo/5-minimal-test.txt
+```
+
+**Purpose**: Test auto-include behavior
+
+Expected layers:
+- ✅ Core Infrastructure (VPC, EC2, RDS, ALB)
+- ✅ Observability (CloudWatch, CloudTrail - AUTO-INCLUDED)
+- ✅ Security (KMS, Secrets Manager - AUTO-INCLUDED)
+
+Expected: Even with minimal input, security and monitoring should be auto-added!
+
+This tests: "Production architectures MUST have encryption and monitoring"

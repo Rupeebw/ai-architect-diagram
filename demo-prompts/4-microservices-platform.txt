@@ -1,0 +1,185 @@
+# Microservices Platform - Distributed Architecture
+
+## Project Overview
+Cloud-native microservices platform with comprehensive distributed tracing and monitoring.
+
+## Network Architecture
+
+### VPC Setup
+- VPC: 10.0.0.0/16
+- 3 Availability Zones (for high availability)
+- 3 Public subnets
+- 3 Private application subnets
+- 3 Private database subnets
+
+### Load Balancing
+- Application Load Balancer (internet-facing)
+- SSL/TLS with ACM certificate
+- Path-based routing to different microservices
+
+## Compute Layer - Microservices
+
+### Service Architecture
+- 3 EC2 Auto Scaling Groups (one per microservice)
+  - User Service (Authentication, profiles)
+  - Product Service (Catalog, inventory)
+  - Order Service (Cart, checkout, payments)
+
+- Each service:
+  - Min: 2 instances
+  - Max: 6 instances
+  - Instance type: t3.medium
+
+## Database Layer - Per Service
+
+### User Service Database
+- RDS PostgreSQL Multi-AZ
+- Instance: db.t3.medium
+- Encryption: KMS
+
+### Product Service Database
+- RDS MySQL Multi-AZ
+- Instance: db.t3.medium
+- Encryption: KMS
+
+### Order Service Database
+- RDS PostgreSQL Multi-AZ
+- Instance: db.t3.large (higher load)
+- Encryption: KMS
+
+## Storage Services
+
+### Service-Specific Storage
+
+1. **User Uploads Bucket (S3)**
+   - User profile pictures
+   - Document uploads
+   - Encryption: SSE-KMS
+
+2. **Product Catalog Bucket (S3)**
+   - Product images
+   - Product videos
+   - CloudFront distribution attached
+
+3. **Order Documents Bucket (S3)**
+   - Invoices, receipts
+   - Shipping labels
+   - Retention: 7 years
+
+### Shared File System
+- EFS for shared configuration
+  - Application config files
+  - Shared libraries
+  - Mounted across all microservices
+
+## Distributed Observability (CRITICAL)
+
+### X-Ray Distributed Tracing
+- Enabled on ALL microservices
+- Trace requests across services
+- Service map visualization
+- Identify inter-service latency
+- Debug errors spanning multiple services
+
+### CloudWatch
+- Centralized logging for all microservices
+- Log Groups per service:
+  - /aws/microservices/user-service
+  - /aws/microservices/product-service
+  - /aws/microservices/order-service
+- Custom metrics per service
+- Aggregated dashboards
+
+### CloudWatch Alarms
+- Per-service CPU/Memory alerts
+- Inter-service communication errors
+- Database connection pool exhaustion
+- API response time degradation
+
+### CloudTrail
+- Audit all API calls
+- Track configuration changes
+- Compliance logging
+
+### SNS Notifications
+- Critical alerts to DevOps team
+- Service health status changes
+- Auto-scaling events
+
+## Event-Driven Architecture
+
+### EventBridge
+- Event bus for inter-service communication
+- Events:
+  - UserRegistered → Product Service (create recommendations)
+  - OrderPlaced → User Service (update loyalty points)
+  - PaymentProcessed → Order Service (fulfill order)
+- Decouples microservices
+- Enables async communication
+
+## Security Services
+
+### Encryption (KMS)
+- Separate CMK per service database
+- S3 bucket encryption
+- EBS volume encryption
+- Secrets Manager secrets encryption
+
+### Secrets Management
+- Database credentials per service
+- API keys for third-party integrations
+- Inter-service authentication tokens
+- Auto-rotation: 90 days
+
+### Threat Detection
+- GuardDuty monitoring
+  - Unusual database access patterns
+  - Potential data exfiltration
+  - Compromised instances
+
+### Security Monitoring
+- Security Hub enabled
+  - CIS AWS Foundations Benchmark
+  - PCI-DSS compliance checks
+  - Centralized security findings
+
+## API Gateway & Routing
+
+### Traffic Flow
+1. User → Route 53 (api.example.com)
+2. Route 53 → Application Load Balancer
+3. ALB → Route based on path:
+   - /users/* → User Service instances
+   - /products/* → Product Service instances
+   - /orders/* → Order Service instances
+4. Each service → Its dedicated RDS database
+5. Services → S3 for storage
+6. Services → EventBridge for async communication
+
+All requests traced by X-Ray, logged to CloudWatch.
+
+## Compliance & Governance
+
+- All data encrypted at rest (KMS)
+- All credentials in Secrets Manager
+- Audit trail via CloudTrail
+- Threat detection via GuardDuty
+- Security posture via Security Hub
+- Distributed tracing for debugging
+
+---
+
+## Testing Instructions
+
+```bash
+/draw-aws-diagram /Users/rupeshpanwar/Documents/PProject/schild/architecture/demo/4-microservices-platform.txt
+```
+
+Expected layers:
+- ✅ Core Infrastructure (VPC, 3 EC2 groups, 3 RDS instances)
+- ✅ Storage (3 S3 buckets + EFS)
+- ✅ Observability (CloudWatch, X-Ray, CloudTrail, EventBridge, SNS) - Full observability stack
+- ✅ Security (KMS, Secrets Manager, GuardDuty, Security Hub) - Full security stack
+
+Expected components: ~40+ services
+Note: Tests advanced observability (X-Ray, EventBridge) and full security suite

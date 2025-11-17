@@ -1,0 +1,52 @@
+# Simple Web Application - Minimal Architecture
+
+## Project Overview
+Basic web application with minimal but production-ready setup.
+
+## Infrastructure Requirements
+
+### Network
+- VPC with 10.0.0.0/16 CIDR
+- 2 Availability Zones
+- 2 Public subnets for load balancer
+- 2 Private subnets for application servers
+- 2 Private subnets for database
+- Internet Gateway and 2 NAT Gateways
+
+### Compute
+- Application Load Balancer (internet-facing)
+- EC2 instances in Auto Scaling Group (min 2, max 4)
+- Instance type: t3.small
+
+### Database
+- RDS MySQL 8.0 Multi-AZ
+- Instance: db.t3.medium
+- Storage: 100 GB
+
+### Storage
+- S3 bucket for application logs
+- S3 bucket for static assets (CSS, JS, images)
+
+### Monitoring
+- CloudWatch for logs and metrics
+- CloudWatch alarms for CPU and errors
+
+### Security
+- KMS encryption for RDS and S3
+- Secrets Manager for database password
+
+---
+
+## Testing Instructions
+
+```bash
+/draw-aws-diagram /Users/rupeshpanwar/Documents/PProject/schild/architecture/demo/2-simple-web-app.txt
+```
+
+Expected layers:
+- ✅ Core Infrastructure
+- ✅ Storage (2 S3 buckets)
+- ✅ Observability (CloudWatch, CloudTrail)
+- ✅ Security (KMS, Secrets Manager - auto)
+
+Expected components: ~20-25 services
