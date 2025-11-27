@@ -40,24 +40,54 @@ Tier 3: Private Data Subnets
     └── ONLY accepts from App Subnet security groups
 ```
 
-### 2. **Subnet Naming and Placement**
+### 2. **Smart Subnet Creation (Conditional DB Tier)**
 
-When user requests "2 private subnets for EC2 and RDS":
-- **Interpret as**: 2 private **APP** subnets + 2 private **DB** subnets = 4 total
-- **NEVER**: Place EC2 and RDS in same 2 subnets
+**IMPORTANT: Only create Private DB Subnets when database services are present**
 
-**Correct Subnet Layout per AZ:**
+**Database Service Detection Keywords:**
+- RDS (any variant: MySQL, PostgreSQL, Aurora, etc.)
+- ElastiCache (Redis, Memcached)
+- Redshift (data warehouse in VPC)
+- DocumentDB
+- Neptune
+- MemoryDB
+
+**Subnet Creation Logic:**
+
+**WITH Database Services (3-Tier Architecture):**
 ```
 10.0.0.0/16 VPC
 ├── AZ1 (10.0.0.0/17)
 │   ├── Public Subnet:     10.0.1.0/24   (ALB, NAT)
 │   ├── Private App Subnet: 10.0.16.0/22  (EC2, ECS)
-│   └── Private DB Subnet:  10.0.32.0/24  (RDS, ElastiCache)
+│   └── Private DB Subnet:  10.0.32.0/24  (RDS, ElastiCache) ← ONLY IF DB EXISTS
 └── AZ2 (10.0.128.0/17)
     ├── Public Subnet:     10.0.2.0/24   (ALB, NAT)
     ├── Private App Subnet: 10.0.20.0/22  (EC2, ECS)
-    └── Private DB Subnet:  10.0.33.0/24  (RDS, ElastiCache)
+    └── Private DB Subnet:  10.0.33.0/24  (RDS, ElastiCache) ← ONLY IF DB EXISTS
 ```
+
+**WITHOUT Database Services (2-Tier Architecture - e.g., Data Lake with EC2+S3):**
+```
+10.0.0.0/16 VPC
+├── AZ1 (10.0.0.0/17)
+│   ├── Public Subnet:     10.0.1.0/24   (ALB, NAT)
+│   └── Private App Subnet: 10.0.16.0/22  (EC2, ECS)
+└── AZ2 (10.0.128.0/17)
+    ├── Public Subnet:     10.0.2.0/24   (ALB, NAT)
+    └── Private App Subnet: 10.0.20.0/22  (EC2, ECS)
+```
+
+**Subnet Naming and Placement:**
+
+When user requests "2 private subnets for EC2 and RDS":
+- **Interpret as**: 2 private **APP** subnets + 2 private **DB** subnets = 4 total
+- **NEVER**: Place EC2 and RDS in same 2 subnets
+
+When architecture has **EC2 + S3 only** (no VPC-based database):
+- **Create**: 2 public subnets + 2 private APP subnets = 4 total
+- **Skip**: Private DB subnets (not needed)
+- **Benefit**: Cleaner diagram, clearer data flow lines
 
 ### 3. **Security Group Visualization**
 
@@ -273,9 +303,9 @@ CORRECT: cloudwatch (parent="1") // External to VPC
 
 ## Subnet Layout in Availability Zones
 
-**For 3-Tier Architecture (Recommended):**
+**For 3-Tier Architecture (WITH Database Services):**
 ```
-Availability Zone Container: 620px W × 760px H
+Availability Zone Container: 620px W × 660px H
 ├── Public Subnet (y=40):        540px W × 140px H
 │   └── ALB, NAT Gateway
 ├── Private App Subnet (y=200):  540px W × 200px H
@@ -284,10 +314,20 @@ Availability Zone Container: 620px W × 760px H
     └── RDS, ElastiCache (isolated, no NAT route)
 ```
 
+**For 2-Tier Architecture (WITHOUT Database Services - e.g., Data Lake):**
+```
+Availability Zone Container: 620px W × 480px H (shorter)
+├── Public Subnet (y=40):        540px W × 140px H
+│   └── ALB, NAT Gateway
+└── Private App Subnet (y=200):  540px W × 200px H (taller for EC2)
+    └── EC2, ECS, Lambda
+```
+
 **Subnet Vertical Spacing:**
 - Between Public and App: 20px
-- Between App and DB: 20px
+- Between App and DB: 20px (only if DB tier exists)
 - Clear visual separation between tiers
+- **Adjust AZ container height based on subnet count**
 
 ## Quality Validation Checklist
 
@@ -305,16 +345,21 @@ Before finalizing, verify:
 - [ ] Container hierarchy: Cloud → VPC → AZ → Subnet → Resource
 
 ### Security Architecture:
-- [ ] **EC2 and RDS are in SEPARATE subnets (never same subnet)**
-- [ ] **3-tier separation: Public → Private App → Private DB**
+- [ ] **Database service detection performed (RDS, ElastiCache, Redshift, etc.)**
+- [ ] **Private DB Subnets ONLY created if database services detected**
+- [ ] **If DB subnets exist: EC2 and RDS are in SEPARATE subnets (never same subnet)**
+- [ ] **Subnet architecture matches detected services:**
+  - **3-tier (Public → App → DB)** if databases present
+  - **2-tier (Public → App)** if only compute + managed storage (S3, DynamoDB)
 - [ ] **ALB in Public Subnets only**
 - [ ] **NAT Gateways in Public Subnets only**
 - [ ] **EC2/ECS in Private App Subnets (not in DB subnets)**
-- [ ] **RDS/databases in Private DB Subnets (isolated tier)**
-- [ ] **Each AZ has all 3 subnet types (if multi-AZ)**
+- [ ] **RDS/databases in Private DB Subnets (isolated tier) - only if DB present**
+- [ ] **Each AZ has matching subnet types (consistency across AZs)**
 - [ ] **Different colors for each subnet tier (green/blue/purple)**
 - [ ] **No direct connection lines from Internet/IGW to database tier**
-- [ ] **Traffic flow: Internet → ALB → EC2 → RDS (never skip tiers)**
+- [ ] **Traffic flow: Internet → ALB → EC2 → RDS (never skip tiers, if DB exists)**
+- [ ] **Connection lines do NOT pass through empty/unused DB subnets**
 
 ### XML Structure:
 - [ ] All connections have valid source/target IDs
@@ -327,13 +372,19 @@ Before finalizing, verify:
 ## Workflow
 
 1. **Parse Input**: Read architecture plan file
-2. **Extract Components**: Identify all AWS services needed
-3. **Calculate Positions**: Use formulas for precise placement
-4. **Generate XML**: Create draw.io mxGraph structure
-5. **Validate Quality**: Check against checklist
-6. **Apply Corrections**: Fix any placement issues
-7. **Save File**: Write to architecture directory
-8. **Report**: Confirm professional standards followed
+2. **Detect Database Services**: Scan for database keywords (RDS, ElastiCache, Redshift, DocumentDB, Neptune, MemoryDB)
+3. **Determine Subnet Architecture**:
+   - **IF database services found** → Create 3-tier architecture (Public + Private App + Private DB subnets)
+   - **IF NO database services** → Create 2-tier architecture (Public + Private App subnets only)
+4. **Extract Components**: Identify all AWS services needed
+5. **Calculate Positions**: Use formulas for precise placement
+   - Adjust AZ container height based on subnet count (660px for 3-tier, 480px for 2-tier)
+   - Position connection lines to avoid passing through empty/unused subnets
+6. **Generate XML**: Create draw.io mxGraph structure
+7. **Validate Quality**: Check against checklist
+8. **Apply Corrections**: Fix any placement issues
+9. **Save File**: Write to architecture directory
+10. **Report**: Confirm professional standards followed, note subnet architecture chosen
 
 ## Output Format
 

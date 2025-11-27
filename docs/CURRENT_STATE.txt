@@ -1,0 +1,127 @@
+Last Updated: 2025-11-27 12:45 PST
+
+=== PROJECT OVERVIEW ===
+AI-powered AWS architecture diagram generator using Claude Code with specialized agents.
+Generates professional draw.io diagrams from text descriptions or plan files.
+
+=== COMPLETED RECENTLY ===
+1. ✅ Enhanced container box visualization for all layer agents (2025-11-27)
+   - Added mandatory container boxes to Storage, Observability, and Security agents
+   - Color-coded borders matching AWS service categories
+
+2. ✅ Created 4 new specialized agents (2025-11-27)
+   - CI/CD Pipeline Agent (CodePipeline, CodeBuild, CodeDeploy, ECR)
+   - CDN/Edge Agent (CloudFront, Route 53, WAF, Shield)
+   - Container Orchestration Agent (ECS, EKS, Fargate, App Mesh)
+   - Serverless Architecture Agent (Lambda, API Gateway, DynamoDB, Step Functions)
+
+3. ✅ Explained /draw-aws-diagram slash command workflow (2025-11-27)
+   - Multi-agent orchestration system
+   - Keyword-based agent detection
+   - Progressive enhancement architecture
+
+4. ✅ Generated example e-commerce architecture diagram (2025-11-27)
+   - File: diagrams/aws-ecommerce-platform-20251127.drawio
+   - Validated diagram structure and identified improvement areas
+
+5. ✅ Updated agent workflow instructions (2025-11-27)
+   - Added "CRITICAL" reminders to create container boxes first
+   - Documented positioning zones for all agents
+
+=== IN PROGRESS ===
+- Testing new agents with actual diagram generation
+- Validating container box rendering in generated diagrams
+- Potentially creating additional agents (Data Analytics, Backup/Recovery)
+
+=== CURRENT ARCHITECTURE ===
+
+Agent System (9 specialized agents):
+1. aws-diagram-orchestrator: Main coordinator
+2. aws-diagram-generator (core): VPC, EC2, RDS, ALB, Route 53
+3. aws-storage-layer-agent: S3, EFS, EBS (BOTTOM_PANEL right, with GREEN container box)
+4. aws-observability-layer-agent: CloudWatch, CloudTrail, X-Ray (RIGHT_PANEL upper, with PINK container box)
+5. aws-security-services-agent: KMS, Secrets Manager, GuardDuty (RIGHT_PANEL lower, with RED container box)
+6. aws-cicd-pipeline-agent: CodePipeline, CodeBuild, CodeDeploy (BOTTOM_PANEL left, with GREEN container box)
+7. aws-cdn-edge-agent: CloudFront, Route 53, WAF, Shield (EDGE_LAYER top, NO container box)
+8. aws-container-orchestration-agent: ECS, EKS, Fargate (VPC app subnets, uses subnet containers)
+9. aws-serverless-architecture-agent: Lambda, API Gateway, DynamoDB (Multi-layer, NO container box)
+
+Positioning Zones:
+- EDGE_LAYER: y=50-170 (CDN, Route 53, WAF - global services)
+- RIGHT_PANEL Upper: 1600,200 → 1960,680 (Observability with pink box)
+- RIGHT_PANEL Lower: 1600,720 → 1960,1140 (Security with red box)
+- BOTTOM_PANEL Left: 40,1200 → 760,1360 (CI/CD with green box)
+- BOTTOM_PANEL Right: 820,1200 → 1540,1360 (Storage with green box)
+- VPC Subnets: Container/EC2 services (uses VPC subnet containers)
+
+=== NEXT SESSION ===
+Start with: Test new agents by generating diagrams with different patterns
+First task: Generate diagram with CI/CD pipeline to validate BOTTOM_PANEL left positioning
+Files to read:
+  - /Users/rupeshpanwar/.claude/commands/draw-aws-diagram.md (slash command entry point)
+  - /Users/rupeshpanwar/.claude/agents/aws-diagram-orchestrator.md (orchestrator logic)
+  - Test with: /draw-aws-diagram "3-tier app with CI/CD pipeline and CloudFront CDN"
+
+Test scenarios:
+1. CI/CD pipeline: "application with CodePipeline, CodeBuild, and deployment to ECS"
+2. Edge/CDN: "static website with CloudFront, Route 53, and WAF protection"
+3. Containers: "microservices on EKS with Fargate and App Mesh"
+4. Serverless: "serverless API with Lambda, API Gateway, and DynamoDB"
+5. Hybrid: "containerized app with CI/CD, CloudFront CDN, and full observability"
+
+=== IMPORTANT NOTES ===
+- ALL agents stored in GLOBAL location: /Users/rupeshpanwar/.claude/agents/
+- Container boxes are MANDATORY for Storage, Observability, Security, and CI/CD layers
+- Container boxes must be created BEFORE any service icons in those layers
+- Color scheme strictly enforced (green/pink/red/orange/purple based on service type)
+- Orchestrator uses keyword matching to detect which agents to invoke
+- Each agent has specific positioning zones to prevent component overlaps
+- Edge and Serverless agents do NOT use container boxes (distributed/global placement)
+- All diagrams saved to: <project-root>/diagrams/ directory
+
+Container Box Colors:
+- Storage: #7AA116 (green)
+- Observability: #E7157B (pink/magenta)
+- Security: #DD344C (red)
+- CI/CD: #4B612C (dark green)
+
+Keyword Detection Examples:
+- "s3", "storage" → Storage agent
+- "cloudwatch", "monitoring" → Observability agent
+- "kms", "secrets" → Security agent (auto-included)
+- "codepipeline", "ci/cd" → CI/CD agent
+- "cloudfront", "cdn" → CDN/Edge agent
+- "ecs", "eks", "kubernetes" → Container agent
+- "lambda", "serverless" → Serverless agent
+
+=== BLOCKERS ===
+NONE
+
+=== DEPENDENCIES ===
+- draw.io: For viewing/editing generated diagrams (https://app.diagrams.net/)
+- Claude Code: AI-powered agent orchestration system
+- Git repository: For tracking changes
+
+=== RECENT CHANGES ===
+2025-11-27:
+- Created 4 new agents (CI/CD, CDN/Edge, Containers, Serverless)
+- Enhanced 3 existing agents with container boxes
+- Documented container box requirement
+- Updated workflow instructions with "CRITICAL" reminders
+
+=== KNOWN ISSUES ===
+NONE currently
+
+=== FUTURE ENHANCEMENTS ===
+Potential additional agents:
+- Data Analytics Agent (Redshift, Kinesis, Glue, Athena, EMR)
+- Backup & Recovery Agent (AWS Backup, disaster recovery patterns)
+- Network Security Agent (detailed VPC security views, Network Firewall)
+- Database Migration Agent (DMS, SCT)
+- Machine Learning Agent (SageMaker, Bedrock)
+
+Potential improvements:
+- Multi-page diagram support for very complex architectures
+- Animation/flow visualization
+- Cost estimation annotations
+- Compliance framework overlays (HIPAA, PCI-DSS, SOC 2)

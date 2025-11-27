@@ -1,0 +1,286 @@
+Last Updated: 2025-11-27 12:45 PST
+
+=== ARCHITECTURAL DECISIONS LOG ===
+
+Decision: Container boxes mandatory for layer grouping
+Date: 2025-11-27
+Category: Architecture
+
+Context & Requirements:
+User reviewed generated diagram (aws-ecommerce-platform-20251127.drawio) and noticed that Storage, Observability, and Security service components were not visually enclosed in container boxes. User showed examples from image references where all service groups were enclosed in labeled boxes similar to VPC and subnet containers.
+
+Chosen Solution:
+Added container box XML templates to three existing agents:
+- Storage Layer Agent: Green container box (#7AA116) in BOTTOM_PANEL right
+- Observability Layer Agent: Pink container box (#E7157B) in RIGHT_PANEL upper
+- Security Services Agent: Red container box (#DD344C) in RIGHT_PANEL lower
+
+Container boxes use draw.io rectangle shape with:
+- strokeWidth=2 (visible border)
+- fillColor=none (transparent background)
+- verticalAlign=top (label at top)
+- Color-coded borders matching service category
+
+Alternatives Considered:
+- Text labels only (current implementation before fix)
+- AWS-specific group shapes (not available in draw.io)
+- Background color fills (rejected - reduces clarity)
+
+Trade-offs Accepted:
++ Pros:
+  - Visual consistency with VPC/subnet grouping
+  - Clear service categorization
+  - Professional appearance matching AWS diagrams
+  - Better diagram readability
+- Cons:
+  - Slightly more complex XML generation
+  - Additional positioning calculations required
+  - Must create container before services (ordering requirement)
+
+Impact:
+- Affected components: aws-storage-layer-agent.md, aws-observability-layer-agent.md, aws-security-services-agent.md
+- Dependencies added: None (using existing draw.io shape library)
+- Workflow change: Agents must create container box BEFORE any service icons
+
+Review/Revisit:
+As needed based on user feedback on generated diagrams
+
+---
+
+Decision: Four new specialized agents for comprehensive AWS architecture coverage
+Date: 2025-11-27
+Category: Architecture
+
+Context & Requirements:
+User requested creation of pending agents mentioned in documentation:
+- CI/CD pipelines
+- CDN/Edge services
+- Container orchestration
+- Serverless architectures
+
+These architecture patterns are common in modern AWS deployments and needed dedicated agent support.
+
+Chosen Solution:
+Created 4 new specialized agents in global location (/Users/rupeshpanwar/.claude/agents/):
+
+1. aws-cicd-pipeline-agent.md
+   - Services: CodePipeline, CodeBuild, CodeDeploy, ECR, GitHub Actions, GitLab CI
+   - Position: BOTTOM_PANEL left (40,1200 → 760,1360)
+   - Container box: Green (#4B612C)
+   - Flow: Source → Build → Deploy
+
+2. aws-cdn-edge-agent.md
+   - Services: CloudFront, Route 53, WAF, Shield, Global Accelerator
+   - Position: EDGE_LAYER top (y=50-170)
+   - Container box: None (services are global, outside AWS Cloud)
+   - Badges: WAF and Shield as small badges near CloudFront
+
+3. aws-container-orchestration-agent.md
+   - Services: ECS, EKS, Fargate, App Mesh, Cloud Map, ECR
+   - Position: VPC private app subnets (replaces EC2 pattern)
+   - Container box: None (uses existing VPC subnet containers)
+   - Launch types: Fargate (serverless) vs EC2/Managed Nodes
+
+4. aws-serverless-architecture-agent.md
+   - Services: Lambda, API Gateway, DynamoDB, Step Functions, SQS, SNS, EventBridge
+   - Position: Multi-layer (Edge for API Gateway, distributed for Lambda/events/data)
+   - Container box: None (distributed across architectural layers)
+   - Paradigm: Event-driven, function-as-a-service
+
+Alternatives Considered:
+- Single "advanced services" mega-agent (rejected - too complex, loses specialization)
+- Project-local agents (rejected - user requested global location)
+- Additional agents for each individual service (rejected - too granular)
+
+Trade-offs Accepted:
++ Pros:
+  - Comprehensive coverage of modern AWS architecture patterns
+  - Each agent is focused and maintainable
+  - Automatic orchestrator detection via keywords
+  - Progressive enhancement (backwards compatible)
+  - Reusable across all projects (global location)
+- Cons:
+  - More agents to maintain (9 total now)
+  - Potential for overlap (container vs serverless, both can use Lambda)
+  - Orchestrator logic more complex (priority system required)
+
+Impact:
+- Affected components: aws-diagram-orchestrator.md (detection logic)
+- Dependencies added: None
+- Agent count: Increased from 5 to 9 specialized agents
+- Keyword detection expanded significantly
+
+Review/Revisit:
+Test with actual diagram generation to validate agent interactions and positioning
+
+---
+
+Decision: Color-coded container borders matching AWS service categories
+Date: 2025-11-27
+Category: Design
+
+Context & Requirements:
+Each service category in AWS has conventional colors used in documentation and diagrams. Container boxes needed consistent color scheme for professional appearance and easy visual recognition.
+
+Chosen Solution:
+Strict color scheme based on AWS service category colors:
+- Storage: #7AA116 (green) - matches S3, EFS colors
+- Observability: #E7157B (pink/magenta) - matches CloudWatch, monitoring services
+- Security: #DD344C (red) - matches KMS, security services
+- CI/CD: #4B612C (dark green) - matches developer tools
+- Networking/Edge: #8C4FFF (purple) - matches networking services
+- Containers: #ED7100 (orange) - matches container services
+- Serverless: #FF9900 (orange) for Lambda, #E7157B (pink) for integration services
+
+Alternatives Considered:
+- Single color for all containers (rejected - loses categorization)
+- User-customizable colors (rejected - adds complexity)
+- Gradient colors (rejected - not supported well in draw.io)
+
+Trade-offs Accepted:
++ Pros:
+  - Immediate visual categorization
+  - Consistent with AWS documentation
+  - Professional appearance
+  - Color-coded legend not needed (self-evident)
+- Cons:
+  - Fixed palette (less flexibility)
+  - Color-blind accessibility consideration needed
+
+Impact:
+- Affected components: All agent MD files
+- Visual consistency across all generated diagrams
+
+Review/Revisit:
+If user feedback indicates accessibility issues
+
+---
+
+Decision: Global agent storage location
+Date: 2025-11-27
+Category: Process
+
+Context & Requirements:
+User explicitly requested: "make sure they are written in global location"
+Agents need to be accessible across all projects for reusability.
+
+Chosen Solution:
+All agents stored in: /Users/rupeshpanwar/.claude/agents/
+This is Claude Code's global agent directory, shared across all projects.
+
+Alternatives Considered:
+- Project-local .claude/agents/ (rejected - user requested global)
+- System-wide /etc/claude/agents/ (rejected - permissions issues)
+
+Trade-offs Accepted:
++ Pros:
+  - Reusable across all projects
+  - Single source of truth for agent definitions
+  - Easier to maintain and update
+- Cons:
+  - Changes affect all projects
+  - Cannot have project-specific customizations
+
+Impact:
+- Agent location: /Users/rupeshpanwar/.claude/agents/
+- All 9 agents accessible globally
+
+Review/Revisit:
+If project-specific agent customization is needed
+
+---
+
+Decision: No container boxes for Edge and Serverless agents
+Date: 2025-11-27
+Category: Architecture
+
+Context & Requirements:
+Edge services (CloudFront, Route 53) are global services outside AWS Cloud regions.
+Serverless services (Lambda, API Gateway) are distributed across multiple architectural layers.
+Traditional container box grouping doesn't apply to these patterns.
+
+Chosen Solution:
+- Edge Agent: No container box, services positioned at diagram top (EDGE_LAYER)
+  - Rationale: Services are global, not regional, positioned outside AWS Cloud container
+  - Visual: Users → Route 53 → CloudFront → IGW → AWS Cloud
+
+- Serverless Agent: No container box, multi-layer distribution
+  - API Gateway at edge layer (y=100)
+  - Lambda functions in compute layer (y=400)
+  - Event services on sides (SQS/SNS/EventBridge)
+  - Data stores at bottom (DynamoDB, Aurora Serverless, y=700)
+  - Rationale: Serverless paradigm doesn't map to single zone
+
+Alternatives Considered:
+- Force all services into container boxes (rejected - architecturally incorrect)
+- Create multiple smaller boxes per layer (rejected - visual clutter)
+
+Trade-offs Accepted:
++ Pros:
+  - Architecturally accurate representation
+  - Clear global vs regional distinction
+  - Event-driven flow more visible
+- Cons:
+  - Inconsistent container box usage across agents
+  - Requires documentation to explain
+
+Impact:
+- Edge and Serverless agents have different visual patterns than layered agents
+- Documentation updated to explain rationale
+
+Review/Revisit:
+As needed
+
+---
+
+Decision: Agent priority system for orchestrator
+Date: 2025-11-27
+Category: Architecture
+
+Context & Requirements:
+Orchestrator needs to invoke agents in correct order to:
+- Build base infrastructure first (VPC, subnets)
+- Add compute layer (EC2/ECS/Lambda)
+- Add supporting layers (storage, security, observability)
+- Add specialized services (CI/CD)
+
+Chosen Solution:
+Four-tier priority system:
+
+Priority 1: PRIMARY ARCHITECTURE (one of these)
+- aws-core-architecture-agent (VPC, EC2, RDS, ALB)
+- OR aws-serverless-architecture-agent (Lambda, API Gateway)
+- OR aws-container-orchestration-agent (ECS/EKS)
+
+Priority 2: INFRASTRUCTURE LAYERS
+- aws-storage-layer-agent (S3, EFS)
+- aws-cdn-edge-agent (CloudFront, WAF)
+
+Priority 3: CROSS-CUTTING CONCERNS
+- aws-security-services-agent (KMS, Secrets Manager - always included)
+- aws-observability-layer-agent (CloudWatch, CloudTrail, X-Ray)
+
+Priority 4: SPECIALIZED WORKFLOWS
+- aws-cicd-pipeline-agent (CodePipeline)
+
+Alternatives Considered:
+- Random/parallel invocation (rejected - ordering matters for positioning)
+- Dependency graph (rejected - overly complex for current needs)
+
+Trade-offs Accepted:
++ Pros:
+  - Predictable agent execution order
+  - Ensures base infrastructure created first
+  - Supports layer-by-layer diagram assembly
+- Cons:
+  - Fixed priority (some flexibility lost)
+  - Must maintain priority documentation
+
+Impact:
+- Orchestrator invokes agents in priority order
+- Base diagram created first, layers added progressively
+
+Review/Revisit:
+If agent dependencies become more complex
+
+---

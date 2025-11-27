@@ -10,7 +10,8 @@ description: Generate professional AWS architecture diagrams with intelligent mu
 
 - **Smart Layer Detection**: Automatically detects required layers (storage, observability, security, CI/CD)
 - **Multi-Agent Coordination**: Orchestrates specialized agents for comprehensive diagrams
-- **Security-First Design**: Enforces 3-tier subnet separation (Public → App → DB)
+- **Smart Subnet Creation**: Conditionally creates DB subnets only when database services detected
+- **Security-First Design**: Enforces proper subnet separation (2-tier or 3-tier based on architecture)
 - **Professional Standards**: Follows AWS Well-Architected Framework visualization guidelines
 - **Enhancement Mode**: Add layers to existing diagrams
 - **Quality Validation**: Self-validates and corrects before delivery
@@ -39,7 +40,7 @@ description: Generate professional AWS architecture diagrams with intelligent mu
 
 ```bash
 # From plan file (auto-detects layers)
-/draw-aws-diagram /Users/rupeshpanwar/Documents/PProject/schild/architecture/1-Simple-3-tier-arch-Plan.txt
+/draw-aws-diagram /path/to/project/architecture/1-Simple-3-tier-arch-Plan.txt
 
 # Direct description
 /draw-aws-diagram "3-tier web app with RDS, S3 storage, CloudWatch monitoring, and CI/CD pipeline"
@@ -51,7 +52,7 @@ description: Generate professional AWS architecture diagrams with intelligent mu
 /draw-aws-diagram "ECS Fargate cluster with ALB, RDS, and CloudWatch Container Insights"
 
 # Add observability to existing diagram
-/draw-aws-diagram --enhance aws-3tier-app.drawio --add=observability
+/draw-aws-diagram --enhance diagrams/aws-3tier-app.drawio --add=observability
 ```
 
 ---
@@ -61,9 +62,10 @@ description: Generate professional AWS architecture diagrams with intelligent mu
 This slash command invokes the **AWS Diagram Orchestrator Agent**, which intelligently coordinates specialized agents based on your requirements.
 
 **IMPORTANT: Output Directory Configuration**
-- All diagrams MUST be saved to: `/Users/rupeshpanwar/Documents/PProject/schild/architecture/diagrams/`
+- All diagrams MUST be saved to a `diagrams/` subdirectory in the project directory where the input file is located
+- Project directory is determined from the input file path (e.g., if input is `/path/to/project/demo-prompts/file.txt`, output goes to `/path/to/project/diagrams/`)
 - Use naming convention: `aws-{architecture-name}-{timestamp}.drawio`
-- The directory already exists and is ready for use
+- Create the `diagrams/` directory if it doesn't exist
 
 ### Step 1: Invoke Orchestrator Agent
 
@@ -168,7 +170,7 @@ The orchestrator validates:
 ### Step 6: Output Generation
 
 **Deliverables**:
-1. **Diagram file**: `architecture/aws-{name}-{timestamp}.drawio`
+1. **Diagram file**: `diagrams/aws-{name}-{timestamp}.drawio` (in project directory)
 2. **Generation report** with:
    - Layers included
    - Components added
@@ -246,34 +248,46 @@ The orchestrator validates:
 
 ## Orchestrator Agent Registry
 
+**Agent Location**: All agents are stored in the global directory `/Users/rupeshpanwar/.claude/agents/`
+
 ### ✅ Currently Available Agents
 
 1. **aws-core-architecture-agent**
-   - File: `.claude/agents/aws-diagram-generator.md`
+   - File: `/Users/rupeshpanwar/.claude/agents/aws-diagram-generator.md`
    - Services: VPC, Subnets, IGW, NAT, ALB, EC2, RDS, Route53
    - Status: ✅ Ready
 
 2. **aws-diagram-orchestrator**
-   - File: `.claude/agents/aws-diagram-orchestrator.md`
+   - File: `/Users/rupeshpanwar/.claude/agents/aws-diagram-orchestrator.md`
    - Role: Intelligent coordinator
+   - Status: ✅ Ready
+
+3. **aws-storage-layer-agent**
+   - File: `/Users/rupeshpanwar/.claude/agents/aws-storage-layer-agent.md`
+   - Services: S3, EFS, EBS
+   - Status: ✅ Ready
+
+4. **aws-observability-layer-agent**
+   - File: `/Users/rupeshpanwar/.claude/agents/aws-observability-layer-agent.md`
+   - Services: CloudWatch, CloudTrail, X-Ray, SNS
+   - Status: ✅ Ready
+
+5. **aws-security-services-agent**
+   - File: `/Users/rupeshpanwar/.claude/agents/aws-security-services-agent.md`
+   - Services: KMS, Secrets Manager, GuardDuty, ACM, WAF
    - Status: ✅ Ready
 
 ### ⏳ Agents To Be Created (Priority Order)
 
-**P1: Essential Services (Week 1)**
-3. `aws-storage-layer-agent` - S3, EFS, EBS
-4. `aws-observability-layer-agent` - CloudWatch, CloudTrail, X-Ray
-5. `aws-security-services-agent` - KMS, Secrets Manager, Security Hub
-
-**P2: DevOps & Edge (Week 2)**
+**P2: DevOps & Edge**
 6. `aws-cicd-pipeline-agent` - CI/CD workflows
-7. `aws-cdn-edge-agent` - CloudFront, WAF, Shield
+7. `aws-cdn-edge-agent` - CloudFront, Route 53, Shield
 
-**P3: Advanced Architectures (Week 3)**
+**P3: Advanced Architectures**
 8. `aws-container-orchestration-agent` - ECS, EKS
 9. `aws-serverless-architecture-agent` - Lambda-based patterns
 
-**P4: Specialized (Week 4)**
+**P4: Specialized**
 10. `aws-data-analytics-agent` - Data pipelines
 11. `aws-backup-recovery-agent` - DR planning
 12. `aws-network-security-agent` - Detailed security views
@@ -293,10 +307,13 @@ When an agent is not yet available:
 
 **All diagrams enforce these security best practices:**
 
-### 1. 3-Tier Subnet Separation (CRITICAL)
+### 1. Smart Subnet Architecture (CRITICAL)
 
-**❌ NEVER place compute and database in same subnet**
+**✅ Automatic subnet architecture based on detected services**
 
+The generator intelligently detects database services and creates the appropriate subnet architecture:
+
+**3-Tier Architecture** (when RDS, ElastiCache, Redshift, etc. detected):
 ```
 Tier 1: Public Subnets (DMZ)
 ├── Application Load Balancer
@@ -307,11 +324,31 @@ Tier 2: Private Application Subnets
 ├── ECS/EKS containers
 └── Can route outbound via NAT
 
-Tier 3: Private Database Subnets
+Tier 3: Private Database Subnets (ONLY IF DATABASE EXISTS)
 ├── RDS databases
 ├── ElastiCache
 └── NO internet access (isolated)
 ```
+
+**2-Tier Architecture** (for Data Lakes, serverless, or compute-only architectures):
+```
+Tier 1: Public Subnets (DMZ)
+├── Application Load Balancer
+└── NAT Gateways
+
+Tier 2: Private Application Subnets
+├── EC2 instances (for ETL, processing)
+├── ECS/EKS containers
+└── Can route outbound via NAT
+
+Note: S3, DynamoDB, and other managed services shown outside VPC
+```
+
+**Key Principles:**
+- ❌ **NEVER** place compute and database in same subnet
+- ✅ **ONLY** create DB subnets when database services are present
+- ✅ **Cleaner diagrams** with no empty/unused DB subnets
+- ✅ **Clear data flow** without lines crossing through empty subnets
 
 ### 2. Defense in Depth
 - Network isolation via subnet separation
@@ -336,6 +373,8 @@ Tier 3: Private Database Subnets
 
 3. **Orchestrator analyzes**:
    - Architecture type: Traditional (EC2-based)
+   - Database detection: Scans for RDS, ElastiCache, Redshift keywords
+   - Subnet architecture: 2-tier (no DB) or 3-tier (with DB)
    - Detected keywords: "3-tier", "S3", "monitoring"
    - Required agents: core, storage, observability, security
 
@@ -374,7 +413,7 @@ Tier 3: Private Database Subnets
    - Observability (CloudWatch)
    - Security Services (KMS, Secrets Manager)
 
-   📁 File: architecture/aws-3tier-app-20251116.drawio
+   📁 File: diagrams/aws-3tier-app-20251116.drawio
    🔗 Open: https://app.diagrams.net/
    ```
 
@@ -390,17 +429,19 @@ As new specialized agents are created:
 
 ### Current Capabilities
 - ✅ Core infrastructure (VPC, EC2, RDS, ALB)
-- ✅ Basic security (3-tier subnet separation)
-- ✅ Intelligent orchestration
+- ✅ Storage layer (S3, EFS, EBS)
+- ✅ Full observability (CloudWatch, X-Ray, CloudTrail, SNS)
+- ✅ Security services (KMS, Secrets Manager, GuardDuty, ACM, WAF)
+- ✅ 3-tier subnet separation (security best practices)
+- ✅ Intelligent multi-agent orchestration
 
 ### Soon Available (as agents are created)
-- ⏳ Storage layer (S3, EFS)
-- ⏳ Full observability (CloudWatch, X-Ray, CloudTrail)
-- ⏳ Security services (KMS, Secrets Manager)
-- ⏳ CI/CD pipelines
-- ⏳ Container orchestration
-- ⏳ Serverless patterns
-- ⏳ Data analytics flows
+- ⏳ CI/CD pipelines (CodePipeline, CodeBuild, CodeDeploy)
+- ⏳ CDN & Edge services (CloudFront, Route 53, Global Accelerator)
+- ⏳ Container orchestration (ECS, EKS, Fargate)
+- ⏳ Serverless patterns (Lambda, API Gateway, Step Functions)
+- ⏳ Data analytics flows (Redshift, Kinesis, Glue)
+- ⏳ Backup & DR planning
 
 ---
 
@@ -447,7 +488,7 @@ As new specialized agents are created:
 
 All diagrams are generated as:
 - **Format**: draw.io XML (.drawio extension)
-- **Output Directory**: `/Users/rupeshpanwar/Documents/PProject/schild/architecture/diagrams/`
+- **Output Directory**: `diagrams/` subdirectory in the project directory (auto-determined from input file path)
 - **Naming Convention**: `aws-{architecture-name}-{timestamp}.drawio`
 - **Fully editable**: Open in https://app.diagrams.net/
 - **Standards-compliant**: AWS Well-Architected Framework

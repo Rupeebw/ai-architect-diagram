@@ -1,0 +1,123 @@
+ How the /draw-aws-diagram Command Works
+
+  High-Level Workflow
+
+  User Input → Orchestrator Agent → Specialized Agents → Final Diagram
+
+  Step-by-Step Process
+
+  1. User Invokes the Command
+
+  /draw-aws-diagram <plan-file or description>
+  # Example: /draw-aws-diagram "3-tier app with S3 and monitoring"
+
+  2. Slash Command Launches Orchestrator
+
+  The command uses the Task tool to launch the aws-diagram-orchestrator agent,
+  which acts as the intelligent coordinator.
+
+  3. Orchestrator Analyzes Requirements
+
+  The orchestrator performs:
+
+  Input Parsing:
+  - Reads architecture plan file (if provided)
+  - Parses text descriptions
+  - Extracts flags (--layers, --minimal, --enhance)
+
+  Smart Layer Detection (Keyword Matching):
+  Keywords Detected → Agent Invoked
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  "S3", "storage"        → aws-storage-layer-agent
+  "CloudWatch", "logs"   → aws-observability-layer-agent
+  "KMS", "encryption"    → aws-security-services-agent
+  "CodePipeline", "CI"   → aws-cicd-pipeline-agent
+  "Lambda", "serverless" → aws-serverless-architecture-agent
+
+  4. Agent Coordination (Priority-Based)
+
+  The orchestrator executes specialized agents in order:
+
+  Priority 1: PRIMARY ARCHITECTURE
+  ├── aws-core-architecture-agent (VPC, EC2, RDS, ALB)
+  ├── OR aws-serverless-architecture-agent (Lambda, API Gateway)
+  ├── OR aws-container-orchestration-agent (ECS/EKS)
+
+  Priority 2: INFRASTRUCTURE LAYERS
+  ├── aws-storage-layer-agent (S3, EFS)
+  ├── aws-cdn-edge-agent (CloudFront, WAF)
+
+  Priority 3: CROSS-CUTTING CONCERNS
+  ├── aws-security-services-agent (KMS, Secrets Manager - always)
+  ├── aws-observability-layer-agent (CloudWatch, X-Ray)
+
+  Priority 4: SPECIALIZED WORKFLOWS
+  ├── aws-cicd-pipeline-agent (CodePipeline)
+  └── aws-data-analytics-agent (Redshift, Kinesis)
+
+  5. Diagram Assembly
+
+  Each agent returns XML fragments that get merged into zones:
+
+  ┌─────────────────────────────────────────────────────┐
+  │  EDGE LAYER (CloudFront, WAF)        Top: y=50      │
+  │  ┌────────────────────────────────────────────┐     │
+  │  │ CORE ARCHITECTURE (VPC, EC2, RDS)         │ OBS │
+  │  │                                             │ SRV │
+  │  │  ┌──────────┐  ┌──────────┐               │ BLT │
+  │  │  │   AZ1    │  │   AZ2    │               │ Y   │
+  │  │  └──────────┘  └──────────┘               │ SEC │
+  │  └────────────────────────────────────────────┘     │
+  │  CI/CD PIPELINE    |  STORAGE (S3, EFS)   Bottom   │
+  └─────────────────────────────────────────────────────┘
+
+  6. Quality Validation
+
+  The orchestrator validates:
+  - No overlapping components
+  - Proper zone allocation
+  - AWS color scheme consistency
+  - Security best practices (3-tier subnet separation)
+  - Valid XML structure
+
+  7. Output Generation
+
+  Saves to diagrams/aws-{name}-{timestamp}.drawio with a generation report.
+
+  ---
+  Key Features
+
+  Security-First Design
+
+  Every diagram enforces 3-tier subnet separation:
+  Public Subnets (DMZ)        → ALB, NAT Gateways
+  Private App Subnets         → EC2, ECS (can route outbound)
+  Private Database Subnets    → RDS (NO internet access)
+
+  Available Agents (draw-aws-diagram.md:250-277)
+
+  Currently ready (in /Users/rupeshpanwar/.claude/agents/):
+  1. ✅ aws-diagram-orchestrator - Coordinator
+  2. ✅ aws-core-architecture-agent (aws-diagram-generator.md)
+  3. ✅ aws-storage-layer-agent
+  4. ✅ aws-observability-layer-agent
+  5. ✅ aws-security-services-agent
+
+  ⏳ To be created: CI/CD, CDN/Edge, Containers, Serverless, Data Analytics
+
+  Progressive Enhancement
+
+  As new agents are added, the orchestrator automatically uses them—no updates
+  needed to the slash command!
+
+  ---
+  Example Execution
+
+  /draw-aws-diagram "3-tier app with S3 and CloudWatch"
+
+  What happens:
+  1. Orchestrator detects: core, storage, observability, security
+  2. Calls agents in sequence, each returns XML
+  3. Assembles zones: Core (center) + Storage (bottom) + Observability (right)
+  4. Validates security (3-tier subnets)
+  5. Outputs: diagrams/aws-3tier-app-20251127.drawio
